@@ -1,0 +1,36 @@
+import tkinter as tk
+from tkinter import messagebox
+
+def calcular_idade():
+    try:
+        ano_atual = 2024 
+        ano_nascimento = entry_ano.get().strip()
+        
+        ano_nascimento = int(ano_nascimento)
+
+        if ano_nascimento > ano_atual:
+            raise ValueError("O ano de nascimento não pode ser no futuro.")
+        if ano_nascimento < 1900:
+            raise ValueError("O ano de nascimento não pode ser antes de 1900.")
+
+        idade = ano_atual - ano_nascimento
+        messagebox.showinfo("Resultado", f"Você tem {idade} anos.")
+    except ValueError as ve:
+        messagebox.showerror("Erro", f"{ve}")
+    except Exception:
+        messagebox.showerror("Erro", "Entrada inválida. Por favor, insira um ano válido.")
+
+janela = tk.Tk()
+janela.title("Calculadora de Idade")
+janela.geometry = ("350X200")
+
+label_ano = tk.Label(janela, text="Ano de Nascimento:")
+label_ano.pack(pady=5)
+
+entry_ano = tk.Entry(janela)
+entry_ano.pack(pady=5)
+
+botao_calcular = tk.Button(janela, text="Calcular Idade", command=calcular_idade)
+botao_calcular.pack(pady=10)
+
+janela.mainloop()
