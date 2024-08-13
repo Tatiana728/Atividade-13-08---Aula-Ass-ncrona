@@ -1,0 +1,111 @@
+import tkinter as tk
+from tkinter import messagebox
+
+def avaliar_expressao(expressao):
+    try:
+     
+        expressao = expressao.replace(' ', '')
+        if not expressao:
+            raise ValueError("A expressão está em branco.")
+ 
+        def analisar(entrada, index):
+            tokens = []
+            num = ''
+            while index < len(entrada):
+                char = entrada[index]
+                if char.isdigit() or char == '.':
+                    num += char
+                elif char in '+-*/':
+                    if num:
+                        tokens.append(float(num))
+                        num = ''
+                    tokens.append(char)
+                elif char == '(':
+                    sub_tokens, index = analisar(entrada, index + 1)
+                    tokens.append(sub_tokens)
+                elif char == ')':
+                    if num:
+                        tokens.append(float(num))
+                    return tokens, index
+                else:
+                    raise ValueError("Operador inválido ou ausente.")
+                index += 1
+
+            if num:
+                tokens.append(float(num))
+            
+            return tokens, index
+
+        def calcular(tokens):
+            def resolver(ops, vals):
+                if ops[-1] == '+':
+                    return vals[-2] + vals[-1]
+                elif ops[-1] == '-':
+                    return vals[-2] - vals[-1]
+                elif ops[-1] == '*':
+                    return vals[-2] * vals[-1]
+                elif ops[-1] == '/':
+                    if vals[-1] == 0:
+                        raise ZeroDivisionError("Divisão por zero detectada.")
+                    return vals[-2] / vals[-1]
+            
+            operadores = []
+            valores = []
+            i = 0
+            while i < len(tokens):
+                token = tokens[i]
+                if isinstance(token, list):
+                    valores.append(calcular(token))
+                elif isinstance(token, float):
+                    valores.append(token)
+                elif token in '+-*/':
+                    while (operadores and operadores[-1] in '*/' and token in '+-') or (operadores and operadores[-1] in '*/' and token in '*/'):
+                        valores.append(resolver(operadores, valores))
+                        operadores.pop()
+                        valores.pop()
+                    operadores.append(token)
+                i += 1
+
+            while operadores:
+                valores.append(resolver(operadores, valores))
+                operadores.pop()
+                valores.pop()
+
+            return valores[-1]
+
+        tokens, index = analisar(expressao, 0)
+        if index != len(expressao):
+            raise ValueError("Parênteses desequilibrados na expressão.")
+        
+        return calcular(tokens)
+
+    except OverflowError:
+        raise OverflowError("Estouro em operações com números muito grandes.")
+    except ZeroDivisionError as zde:
+        raise ZeroDivisionError(zde)
+    except ValueError as ve:
+        raise ValueError(ve)
+    except Exception:
+        raise ValueError("Erro de sintaxe na expressão.")
+
+def avaliar():
+    try:
+        expressao = entry_expressao.get()
+        resultado = avaliar_expressao(expressao)
+        messagebox.showinfo("Resultado", f"O resultado é: {resultado}")
+    except Exception as e:
+        messagebox.showerror("Erro", f"Erro ao avaliar a expressão: {e}")
+
+janela = tk.Tk()
+janela.title("Avaliador de Expressões Matemáticas")
+
+label_expressao = tk.Label(janela, text="Digite a expressão matemática:")
+label_expressao.pack(pady=5)
+
+entry_expressao = tk.Entry(janela, width=50)
+entry_expressao.pack(pady=5)
+
+botao_avaliar = tk.Button(janela, text="Avaliar", command=avaliar)
+botao_avaliar.pack(pady=10)
+
+janela.mainloop()
