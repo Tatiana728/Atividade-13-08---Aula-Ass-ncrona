@@ -1,0 +1,48 @@
+import tkinter as tk
+from tkinter import messagebox
+from statistics import mean, median, mode, StatisticsError
+
+def calcular_estatisticas():
+    try:
+       
+        entrada = entry_numeros.get().strip()
+        if not entrada:
+            raise ValueError("A lista de números está vazia.")
+
+        numeros = list(map(float, entrada.split(',')))
+
+        if not numeros:
+            raise ValueError("A lista de números está vazia.")
+
+        media = mean(numeros)
+        mediana = median(numeros)
+        try:
+            moda = mode(numeros)
+        except StatisticsError:
+            moda = "Sem moda" 
+
+        resultado = f"Média: {media}\nMediana: {mediana}\nModa: {moda}"
+        messagebox.showinfo("Resultados", resultado)
+
+    except ValueError as ve:
+        messagebox.showerror("Erro", f"Entrada inválida: {ve}. Por favor, insira uma lista de números separados por vírgula.")
+    except ZeroDivisionError:
+        messagebox.showerror("Erro", "Divisão por zero ao calcular a média.")
+    except OverflowError:
+        messagebox.showerror("Erro", "Os números são muito grandes para serem calculados.")
+    except Exception as e:
+        messagebox.showerror("Erro", f"Ocorreu um erro inesperado: {e}")
+
+janela = tk.Tk()
+janela.title("Calculadora de Estatísticas")
+
+label_numeros = tk.Label(janela, text="Digite uma lista de números separados por vírgula:")
+label_numeros.pack(pady=5)
+
+entry_numeros = tk.Entry(janela, width=50)
+entry_numeros.pack(pady=5)
+
+botao_calcular = tk.Button(janela, text="Calcular", command=calcular_estatisticas)
+botao_calcular.pack(pady=10)
+
+janela.mainloop()
