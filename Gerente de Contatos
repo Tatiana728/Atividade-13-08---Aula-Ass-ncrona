@@ -1,0 +1,92 @@
+import tkinter as tk
+from tkinter import messagebox
+import os
+import json
+
+# Arquivo onde os contatos serão armazenados
+ARQUIVO_CONTATOS = 'contatos.json'
+
+def carregar_contatos():
+    """Carrega os contatos do arquivo JSON."""
+    try:
+        if not os.path.exists(ARQUIVO_CONTATOS):
+            return {}
+        
+        with open(ARQUIVO_CONTATOS, 'r', encoding='utf-8') as arquivo:
+            return json.load(arquivo)
+    except json.JSONDecodeError:
+        messagebox.showerror("Erro", "Arquivo de contatos corrompido.")
+        return {}
+
+def salvar_contatos(contatos):
+    """Salva os contatos no arquivo JSON."""
+    try:
+        with open(ARQUIVO_CONTATOS, 'w', encoding='utf-8') as arquivo:
+            json.dump(contatos, arquivo, ensure_ascii=False, indent=4)
+    except IOError as e:
+        messagebox.showerror("Erro", f"Erro ao salvar no arquivo: {e}")
+
+def adicionar_contato():
+    """Adiciona um novo contato à lista."""
+    nome = entry_nome.get().strip()
+    telefone = entry_telefone.get().strip()
+
+    # Validações
+    if not nome or not telefone:
+        messagebox.showerror("Erro", "Nome e número de telefone são obrigatórios.")
+        return
+
+    if not telefone.isdigit() or len(telefone) < 7:
+        messagebox.showerror("Erro", "Formato de número de telefone inválido.")
+        return
+
+    if nome in contatos:
+        messagebox.showerror("Erro", "Nome do contato duplicado.")
+        return
+
+    # Adiciona o contato
+    contatos[nome] = telefone
+    salvar_contatos(contatos)
+    atualizar_lista_contatos()
+    entry_nome.delete(0, tk.END)
+    entry_telefone.delete(0, tk.END)
+    messagebox.showinfo("Sucesso", "Contato adicionado com sucesso.")
+
+def atualizar_lista_contatos():
+    """Atualiza a lista de contatos exibida."""
+    listbox_contatos.delete(0, tk.END)
+    for nome, telefone in contatos.items():
+        listbox_contatos.insert(tk.END, f"{nome}: {telefone}")
+
+# Carrega os contatos existentes
+contatos = carregar_contatos()
+
+# Cria a janela principal
+janela = tk.Tk()
+janela.title("Gerenciador de Contatos")
+
+# Cria o rótulo e a entrada para o nome
+label_nome = tk.Label(janela, text="Nome:")
+label_nome.pack(pady=5)
+entry_nome = tk.Entry(janela)
+entry_nome.pack(pady=5)
+
+# Cria o rótulo e a entrada para o telefone
+label_telefone = tk.Label(janela, text="Telefone:")
+label_telefone.pack(pady=5)
+entry_telefone = tk.Entry(janela)
+entry_telefone.pack(pady=5)
+
+# Cria o botão para adicionar o contato
+botao_adicionar = tk.Button(janela, text="Adicionar Contato", command=adicionar_contato)
+botao_adicionar.pack(pady=10)
+
+# Cria a lista para exibir os contatos
+listbox_contatos = tk.Listbox(janela, width=50)
+listbox_contatos.pack(pady=10)
+
+# Atualiza a lista de contatos exibida
+atualizar_lista_contatos()
+
+# Inicia o loop principal da interface
+janela.mainloop()
